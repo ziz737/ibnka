@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ابن كثير</title>
+    <!-- PWA: التثبيت على الشاشة -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00827f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ابن كثير">
+    <link rel="icon" type="image/png" href="2.png">
+    <link rel="apple-touch-icon" href="2.png">
+    <style>
+        :root {
+            --primary: #00827f;
+            /* MoE Teal Green */
+            --primary-hover: #006b68;
+            --bg: #ffffff;
+            --text-main: #00827f;
+            --text-sub: #005c5a;
+            --glass-bg: rgba(0, 130, 127, 0.05);
+            --glass-border: rgba(0, 130, 127, 0.2);
+            --btn-text: #00827f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            /* Changed from center to push content up */
+            overflow-x: hidden;
+            position: relative;
+            color: var(--text-main);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px 20px 110px 20px;
+            /* Reduced top padding */
+            text-align: center;
+            z-index: 1;
+        }
+
+        header {
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo {
+            width: 250px;
+            margin-bottom: 25px;
+            opacity: 1;
+            /* Remove background/padding since body is now same color */
+        }
+
+        h1 {
+            color: var(--text-main);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: var(--text-sub);
+            font-size: 1.1rem;
+        }
+
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .link-btn {
+            display: block;
+            padding: 18px 25px;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 16px;
+            color: var(--btn-text);
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .link-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px -5px rgba(141, 182, 0, 0.3);
+        }
+
+        .link-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .link-btn::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.1),
+                    transparent);
+            transition: 0.5s;
+        }
+
+        .link-btn:hover::after {
+            left: 100%;
+        }
+
+        .empty-state {
+            color: #64748b;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(141, 182, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            margin: 20px auto;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .link-btn {
+                font-size: 1.1rem;
+                padding: 15px 20px;
+            }
+        }
+
+        /* بانر التثبيت التلقائي على الشاشة */
+        .install-bar {
+            position: fixed;
+            bottom: 76px;
+            right: 16px;
+            left: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid var(--glass-border);
+            box-shadow: 0 12px 30px rgba(0, 130, 127, 0.18);
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 50;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .install-bar.show {
+            display: flex;
+        }
+
+        .install-bar img {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .install-text {
+            flex: 1;
+            text-align: right;
+        }
+
+        .install-text strong {
+            display: block;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .install-text span {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+        }
+
+        .install-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .install-now {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .install-now:hover {
+            background: var(--primary-hover);
+        }
+
+        .install-later {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            background: rgba(255, 255, 255, 0.97);
+            box-shadow: 0 -4px 20px rgba(0, 130, 127, 0.12);
+            border-top: 1px solid var(--glass-border);
+            padding: 6px 10px 8px;
+            font-size: 0.78rem;
+            color: var(--text-sub);
+            line-height: 1.7;
+            text-align: center;
+            z-index: 40;
+        }
+
+        footer .dev-name {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        footer a.phone {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            direction: ltr;
+            unicode-bidi: embed;
+        }
+
+        .ios-install {
+            display: none;
+            background: #f0fdfa;
+            border: 2px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-top: 18px;
+            font-size: 0.92rem;
+            color: var(--text-sub);
+            line-height: 2;
+        }
+
+        .ios-install.show {
+            display: block;
+        }
+
+        .ios-install strong {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <img src="2.png" alt="شعار وزارة التعليم والرؤية" class="logo">
+            <h1>متوسطة ابن كثير ببريدة</h1>
+            <p>مرحباً بكم في صفحة أنشطة وفعاليات متوسطة ابن كثير ببريدة</p>
+
+        </header>
+
+        <div id="links-container" class="links-container">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div id="ios-install" class="ios-install">
+            <strong>📱 لتثبيت التطبيق على الآيفون:</strong><br>
+            1️⃣ اضغط زر <strong>مشاركة</strong> <span dir="ltr">⎙</span> أسفل سفاري<br>
+            2️⃣ اختر <strong>«إضافة إلى الشاشة الرئيسية»</strong><br>
+            3️⃣ اضغط <strong>«إضافة»</strong> في الأعلى
+        </div>
+
+        <footer>
+            برمجة وتطوير: <span class="dev-name">الأستاذ عبدالعزيز الحودي</span><br>
+            <a class="phone" href="tel:0553999737">0553999737</a>
+        </footer>
+    </div>
+
+    <!-- بانر التثبيت التلقائي -->
+    <div id="install-bar" class="install-bar" role="dialog" aria-label="تثبيت الصفحة">
+        <img src="2.png" alt="أيقونة الصفحة">
+        <div class="install-text">
+            <strong>ثبّت الصفحة على شاشتك</strong>
+            <span id="install-sub">وصول أسرع لصفحة الأنشطة والفعاليات</span>
+        </div>
+        <div class="install-actions">
+            <button id="install-now" class="install-now">تثبيت</button>
+            <button id="install-later" class="install-later">لاحقاً</button>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('links-container');
+        const installBar = document.getElementById('install-bar');
+        const installNowBtn = document.getElementById('install-now');
+        const installLaterBtn = document.getElementById('install-later');
+        const iosInstall = document.getElementById('ios-install');
+        let deferredPrompt = null;
+
+        // تسجيل Service Worker (شرط التثبيت)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch((err) => { console.warn('SW:', err); });
+            });
+        }
+
+        function isStandalone() {
+            return window.matchMedia('(display-mode: standalone)').matches ||
+                   window.navigator.standalone === true;
+        }
+
+        function isIOS() {
+            return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        // الآيفون لا يدعم التثبيت التلقائي: نعرض خطوات التثبيت اليدوي فقط لأجهزة آبل
+        if (isIOS() && !isStandalone()) {
+            iosInstall.classList.add('show');
+        }
+
+        function dismissInstall(days = 7) {
+            try {
+                localStorage.setItem('install-dismissed', String(Date.now() + days * 864e5));
+            } catch (e) {}
+            installBar.classList.remove('show');
+        }
+
+        function canAutoPrompt() {
+            if (isStandalone()) return false;
+            try {
+                const until = parseInt(localStorage.getItem('install-dismissed') || '0', 10);
+                if (Date.now() < until) return false;
+            } catch (e) {}
+            return true;
+        }
+
+        // مثل shlehat: بانر تلقائي فقط — يظهر عند جهوزية التثبيت، وزرّه يفتح النافذة النظامية
+        async function autoPrompt() {
+            if (!deferredPrompt || !canAutoPrompt()) return;
+            try {
+                await deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBar.classList.remove('show');
+                    try { localStorage.removeItem('install-dismissed'); } catch (e) {}
+                    deferredPrompt = null;
+                    return;
+                }
+                // رُفضت النافذة التلقائية: نُبقي البانر ليضغط المستخدم بنفسه
+                installBar.classList.add('show');
+            } catch (e) {
+                installBar.classList.add('show');
+            }
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (canAutoPrompt()) {
+                setTimeout(autoPrompt, 1500);
+            } else {
+                installBar.classList.add('show');
+            }
+        });
+
+        // زر بانر التثبيت: يفتح نافذة التثبيت النظامية
+        installNowBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                installBar.classList.remove('show');
+                return;
+            }
+            const p = deferredPrompt;
+            deferredPrompt = null;
+            try {
+                await p.prompt();
+                await p.userChoice;
+            } catch (e) {}
+            dismissInstall(7);
+        });
+
+        installLaterBtn.addEventListener('click', () => dismissInstall(7));
+
+        window.addEventListener('appinstalled', () => {
+            installBar.classList.remove('show');
+            deferredPrompt = null;
+            try { localStorage.removeItem('install-dismissed'); } catch (e) {}
+        });
+
+        async function fetchLinks() {
+            try {
+                const response = await fetch('save.php');
+                const links = await response.json();
+                renderLinks(links);
+            } catch (err) {
+                container.innerHTML = '<p class="empty-state">حدث خطأ أثناء تحميل الروابط</p>';
+            }
+        }
+
+        function renderLinks(links) {
+            const visibleLinks = links.filter(link => !link.hidden);
+
+            if (!visibleLinks || visibleLinks.length === 0) {
+                container.innerHTML = '<div class="empty-state">لا توجد روابط مضافة حالياً</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            visibleLinks.forEach((link, index) => {
+                const a = document.createElement('a');
+                a.href = link.url;
+                a.className = 'link-btn';
+                a.target = '_blank';
+                a.textContent = link.label;
+
+                // Add a slight stagger to animations
+                a.style.animationDelay = `${index * 0.1}s`;
+
+                container.appendChild(a);
+            });
+        }
+
+        fetchLinks();
+    </script>
+</body>
+
+</html>

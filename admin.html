@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - إدارة الروابط</title>
+    <style>
+        :root {
+            --primary: #00827f;
+            --primary-hover: #00605e;
+            --bg: #fdfdfd;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-muted: #666666;
+            --danger: #ef4444;
+            --shadow: 0 4px 15px rgba(0, 130, 127, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        h1 {
+            margin-bottom: 24px;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .links-list {
+            list-style: none;
+        }
+
+        .link-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .link-item:last-child {
+            border-bottom: none;
+        }
+
+        .link-info {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .link-label {
+            font-weight: 600;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .link-url {
+            color: var(--text-muted);
+            font-size: 12px;
+            direction: ltr;
+            text-align: right;
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .delete-btn {
+            background-color: transparent;
+            color: var(--danger);
+            width: auto;
+            padding: 8px 12px;
+            border: 1px solid var(--danger);
+            margin-right: 8px;
+        }
+
+        .edit-btn {
+            background-color: transparent;
+            color: var(--primary);
+            width: auto;
+            padding: 8px 12px;
+            border: 1px solid var(--primary);
+        }
+
+        .edit-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .visibility-btn {
+            background-color: transparent;
+            color: var(--text-muted);
+            width: auto;
+            padding: 8px 12px;
+            border: 1px solid var(--text-muted);
+        }
+
+        .visibility-btn.hidden {
+            background-color: #fce7f3;
+            color: #db2777;
+            border-color: #db2777;
+        }
+
+        .link-item.is-hidden .link-label {
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+
+        .delete-btn:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .cancel-edit {
+            background-color: #94a3b8;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .cancel-edit:hover {
+            background-color: #64748b;
+        }
+
+        .move-btn {
+            background-color: transparent;
+            color: var(--primary);
+            width: auto;
+            min-width: 60px;
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .move-btn:disabled {
+            border-color: #cbd5e1;
+            color: #cbd5e1;
+            cursor: not-allowed;
+            background-color: #f8fafc;
+        }
+
+        .move-btn:not(:disabled):hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .link-item.moving {
+            background-color: #f0fdf4;
+            transition: background-color 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>إدارة الروابط</h1>
+
+        <div class="card">
+            <div class="form-group">
+                <label for="label">اسم الموقع</label>
+                <input type="text" id="label" placeholder="مثال: منصة مدرستي">
+            </div>
+            <div class="form-group">
+                <label for="url">رابط الموقع (URL)</label>
+                <input type="url" id="url" placeholder="https://example.com" dir="ltr">
+            </div>
+            <button id="add-btn">إضافة رابط جديد</button>
+            <button id="cancel-edit-btn" class="cancel-edit">إلغاء التعديل</button>
+            <div id="status" class="status"></div>
+        </div>
+
+        <div class="card">
+            <h2>الروابط الحالية</h2>
+            <ul id="links-list" class="links-list">
+                <!-- الروابط سيتم توليدها هنا -->
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="index.html" style="color: var(--primary); text-decoration: none;">العودة لصفحة الطالب</a>
+        </div>
+    </div>
+
+    <script>
+        const labelInput = document.getElementById('label');
+        const urlInput = document.getElementById('url');
+        const addBtn = document.getElementById('add-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const linksList = document.getElementById('links-list');
+        const statusDiv = document.getElementById('status');
+
+        let links = [];
+        let editIndex = -1;
+
+        async function fetchLinks() {
+            try {
+                const response = await fetch('save.php');
+                links = await response.json();
+                renderLinks();
+            } catch (err) {
+                showStatus('خطأ في تحميل الروابط', 'error');
+            }
+        }
+
+        async function saveLinks() {
+            try {
+                const response = await fetch('save.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(links)
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    showStatus('تم الحفظ بنجاح', 'success');
+                } else {
+                    showStatus('خطأ أثناء الحفظ', 'error');
+                }
+            } catch (err) {
+                showStatus('خطأ في الاتصال بالسيرفر', 'error');
+            }
+        }
+
+        function renderLinks() {
+            linksList.innerHTML = '';
+            links.forEach((link, index) => {
+                const li = document.createElement('li');
+                li.className = `link-item ${link.hidden ? 'is-hidden' : ''}`;
+                li.id = `link-${index}`;
+                li.innerHTML = `
+                    <div class="link-info">
+                        <div class="link-label">${link.label} ${link.hidden ? '(مخفي)' : ''}</div>
+                        <div class="link-url" dir="ltr" title="${link.url}">${link.url}</div>
+                    </div>
+                    <div class="btn-container">
+                        <button class="move-btn" onclick="moveLink(${index}, -1)" ${index === 0 ? 'disabled' : ''}>رفع</button>
+                        <button class="move-btn" onclick="moveLink(${index}, 1)" ${index === links.length - 1 ? 'disabled' : ''}>تنزيل</button>
+                        <button class="visibility-btn ${link.hidden ? 'hidden' : ''}" onclick="toggleVisibility(${index})">
+                            ${link.hidden ? 'إظهار' : 'إخفاء'}
+                        </button>
+                        <button class="edit-btn" onclick="editLink(${index})">تعديل</button>
+                        <button class="delete-btn" onclick="deleteLink(${index})">حذف</button>
+                    </div>
+                `;
+                linksList.appendChild(li);
+            });
+        }
+
+        window.moveLink = (index, direction) => {
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= links.length) return;
+            
+            // Swap elements in the array
+            const temp = links[index];
+            links[index] = links[targetIndex];
+            links[targetIndex] = temp;
+            
+            // Re-render
+            renderLinks();
+            
+            // Optional: highlight the moved element
+            const movedEl = document.getElementById(`link-${targetIndex}`);
+            if (movedEl) {
+                movedEl.classList.add('moving');
+                setTimeout(() => movedEl.classList.remove('moving'), 1000);
+            }
+            
+            // Persist changes
+            saveLinks();
+        };
+
+        addBtn.addEventListener('click', () => {
+            const label = labelInput.value.trim();
+            const url = urlInput.value.trim();
+
+            if (!label || !url) {
+                showStatus('يرجى ملء جميع الحقول', 'error');
+                return;
+            }
+
+            if (editIndex > -1) {
+                // Update mode
+                links[editIndex] = { ...links[editIndex], label, url };
+                editIndex = -1;
+                addBtn.textContent = 'إضافة رابط جديد';
+                cancelEditBtn.style.display = 'none';
+                showStatus('تم تعديل الرابط بنجاح', 'success');
+            } else {
+                // Add mode
+                links.push({ label, url, hidden: false });
+                showStatus('تم إضافة الرابط بنجاح', 'success');
+            }
+
+            labelInput.value = '';
+            urlInput.value = '';
+            
+            renderLinks();
+            saveLinks();
+        });
+
+        window.editLink = (index) => {
+            const link = links[index];
+            labelInput.value = link.label;
+            urlInput.value = link.url;
+            editIndex = index;
+            addBtn.textContent = 'تحديث الرابط';
+            cancelEditBtn.style.display = 'block';
+            labelInput.focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.toggleVisibility = (index) => {
+            links[index].hidden = !links[index].hidden;
+            renderLinks();
+            saveLinks();
+        };
+
+        cancelEditBtn.addEventListener('click', () => {
+            editIndex = -1;
+            labelInput.value = '';
+            urlInput.value = '';
+            addBtn.textContent = 'إضافة رابط جديد';
+            cancelEditBtn.style.display = 'none';
+        });
+
+        window.deleteLink = (index) => {
+            if (confirm('هل أنت متأكد من حذف هذا الرابط؟')) {
+                links.splice(index, 1);
+                if (editIndex === index) {
+                    cancelEditBtn.click();
+                }
+                renderLinks();
+                saveLinks();
+            }
+        };
+
+        function showStatus(msg, type) {
+            statusDiv.textContent = msg;
+            statusDiv.className = 'status ' + type;
+            setTimeout(() => {
+                statusDiv.textContent = '';
+            }, 3000);
+        }
+
+        // Initial fetch
+        fetchLinks();
+    </script>
+</body>
+</html>
